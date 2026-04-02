@@ -20,10 +20,16 @@ public class App {
         System.out.println("Goodbye!");
     }
 
+    // For JUnit testing
+    public String getGreeting() {
+        return "Welcome to Tic-Tac-Toe!";
+    }
+
     private static boolean promptPlayAgain(Scanner scanner) {
         while (true) {
             System.out.print("\nWould you like to play again (yes/no)? ");
             String line = scanner.nextLine();
+
             if (line == null) {
                 System.out.println("That is not a valid entry!");
                 continue;
@@ -54,15 +60,18 @@ class TicTacToeGame {
         board.print();
 
         while (true) {
+
+            System.out.println("\nPlayer " + currentPlayer + "'s turn");
+
             Integer move = promptMove();
             if (move == null) {
-                System.out.println("\nThat is not a valid move! Try again.\n");
+                System.out.println("\nInvalid input! Try again.\n");
                 continue;
             }
 
             boolean placed = board.place(move, currentPlayer);
             if (!placed) {
-                System.out.println("\nThat is not a valid move! Try again.\n");
+                System.out.println("\nThat spot is already taken! Try again.\n");
                 continue;
             }
 
@@ -92,7 +101,6 @@ class TicTacToeGame {
         String s = line.trim();
         if (s.isEmpty()) return null;
 
-        // Reject decimals and weird mixed inputs (e.g., "3.0", "1 2", "7$")
         for (int i = 0; i < s.length(); i++) {
             char ch = s.charAt(i);
             if (!(ch >= '0' && ch <= '9')) return null;
@@ -100,6 +108,7 @@ class TicTacToeGame {
 
         try {
             int val = Integer.parseInt(s);
+            if (val < 1 || val > 9) return null;
             return val;
         } catch (NumberFormatException e) {
             return null;
@@ -108,7 +117,7 @@ class TicTacToeGame {
 }
 
 class Board {
-    private final char[] cells; // 9 cells: 'X', 'O', or '\0' for empty
+    private final char[] cells;
 
     Board() {
         cells = new char[9];
@@ -130,9 +139,10 @@ class Board {
                 {0,4,8},{2,4,6}
         };
 
-        for (int i = 0; i < lines.length; i++) {
-            int a = lines[i][0], b = lines[i][1], c = lines[i][2];
-            if (cells[a] == player && cells[b] == player && cells[c] == player) {
+        for (int[] line : lines) {
+            if (cells[line[0]] == player &&
+                cells[line[1]] == player &&
+                cells[line[2]] == player) {
                 return true;
             }
         }
@@ -140,8 +150,8 @@ class Board {
     }
 
     boolean isDraw() {
-        for (int i = 0; i < 9; i++) {
-            if (cells[i] == '\0') return false;
+        for (char c : cells) {
+            if (c == '\0') return false;
         }
         return true;
     }
@@ -155,16 +165,13 @@ class Board {
     }
 
     private String formatRow(int startIdx) {
-        String a = cellDisplay(startIdx);
-        String b = cellDisplay(startIdx + 1);
-        String c = cellDisplay(startIdx + 2);
-        return "    " + a + "  |  " + b + "  |  " + c;
+        return "    " + cellDisplay(startIdx) + "  |  "
+                + cellDisplay(startIdx + 1) + "  |  "
+                + cellDisplay(startIdx + 2);
     }
 
     private String cellDisplay(int idx) {
-        if (cells[idx] == '\0') {
-            return String.valueOf(idx + 1);
-        }
-        return String.valueOf(cells[idx]);
+        return (cells[idx] == '\0') ? String.valueOf(idx + 1)
+                                   : String.valueOf(cells[idx]);
     }
 }
